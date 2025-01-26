@@ -1,0 +1,67 @@
+name: price-predict
+
+services:
+  mlflow:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.mlflow
+    ports:
+      - "5555:5555"
+    volumes:
+      - ../mlartifacts:/app/mlartifacts # Bind mount local directory to container directory
+      - ../mlruns:/app/mlruns # Bind mount local directory to container directory
+
+  api:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.api
+    ports:
+      - "8001:8001"
+    depends_on:
+      - mlflow
+
+  data-workers:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.data
+    
+  cache:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.cache
+    depends_on:
+      - mlflow
+
+  monitoring:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.monitoring
+    depends_on:
+      - mlflow
+    
+  models-btc:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.models.btc
+    depends_on:
+      - mlflow
+  
+  models-eth:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.models.eth
+    depends_on:
+      - mlflow
+
+  portainer:
+    image: portainer/portainer-ce:2.20.3
+    ports:
+      - "8000:8000"  # Port for the Portainer agent
+      - "9443:9443"  # HTTPS port for the Portainer UI
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data
+    restart: always
+
+volumes:
+  portainer_data:

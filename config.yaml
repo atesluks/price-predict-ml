@@ -1,0 +1,41 @@
+models:
+  - timeframe: "1m"
+    pair: "BTC-USD"
+    lags: 8
+    data_type: "hourly"
+    name: "06_btc_1m_from_btc_8h_multi"
+  - timeframe: "2m"
+    pair: "BTC-USD" 
+    lags: 8
+    data_type: "hourly"
+    name: "07_btc_2m_from_btc_8h_multi"
+  - timeframe: "3m"
+    pair: "BTC-USD"
+    lags: 7
+    data_type: "daily"
+    name: "08_btc_3m_from_btc_7d_multi"
+  - timeframe: "6m"
+    pair: "BTC-USD"
+    lags: 7
+    data_type: "daily"
+    name: "09_btc_6m_from_btc_7d_multi"
+  - timeframe: "1m"
+    pair: "ETH-USD"
+    lags: 8
+    data_type: "hourly"
+    name: "10_eth_1m_from_eth_8h_multi"
+  - timeframe: "2m"
+    pair: "ETH-USD"
+    lags: 8
+    data_type: "hourly"
+    name: "11_eth_2m_from_eth_8h_multi"
+  - timeframe: "3m"
+    pair: "ETH-USD"
+    lags: 7
+    data_type: "daily"
+    name: "12_eth_3m_from_eth_7d_multi"
+  - timeframe: "6m"
+    pair: "ETH-USD"
+    lags: 7
+    data_type: "daily"
+    name: "13_eth_6m_from_eth_7d_multi"

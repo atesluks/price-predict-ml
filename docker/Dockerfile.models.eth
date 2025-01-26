@@ -1,0 +1,33 @@
+# Use the official Python image from the Docker Hub
+FROM python:3.12.3
+
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+# Create and set the working directory in the container
+WORKDIR /app
+
+# Update the package list and install tmux
+RUN apt-get update && apt-get install -y tmux
+
+# Clean up to reduce the image size
+RUN apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Create the ~/.tmux.conf file with the specified content
+RUN echo "set -g mouse on\nsetw -g mode-keys vi" > ~/.tmux.conf
+
+# Copy the requirements file into the container
+COPY requirements.txt /app/
+
+# Install the dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy the rest of the application into the container
+COPY . /app/
+
+# Set access rights for the execution file
+RUN chmod +x /app/docker/scripts/run_models_eth.sh
+
+# Run the application
+ENTRYPOINT ["/app/docker/scripts/run_models_eth.sh"]

@@ -1,0 +1,24 @@
+## Database Migration with Alembic
+
+Alembic is a database migration tool that helps manage changes to the database schema. When you make changes to the models in [app/models.py](../app/models.py), you need to create and run database migrations to apply those changes.
+
+Before running any migration scripts, make sure your database credentials are properly configured in the `.env` file. The required variables are `POSTGRES_URL`, `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, and `POSTGRES_PORT`.
+
+There are two main use cases for running migrations:
+
+1. When you've made changes to the models and need to both generate migration scripts and apply them:
+```
+docker build -t migration -f docker/Dockerfile.migration .
+docker run --rm \
+    -v ./alembic:/app/alembic \
+    -v ./alembic.ini:/app/alembic.ini \
+    -e GENERATE_SCRIPTS=true \
+    -e MIGRATION_MESSAGE="Your migration message here" \
+    migration
+```
+2. When you just need to apply existing migrations (e.g., setting up a new database):
+```
+docker build -t migration -f docker/Dockerfile.migration .
+docker run --rm -e GENERATE_SCRIPTS=false migration
+```
+The commands create a temporary Docker container with the necessary environment for running migrations. Once the migration is complete, the container automatically shuts down.
