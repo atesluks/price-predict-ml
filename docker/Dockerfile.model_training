@@ -27,7 +27,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . /app/
 
 # Set access rights for the execution file
-RUN chmod +x /app/docker/scripts/run_models_eth.sh
+RUN chmod +x /app/docker/scripts/run_model_training.sh
 
 # Run the application
-ENTRYPOINT ["/app/docker/scripts/run_models_eth.sh"]
+ENTRYPOINT ["/app/docker/scripts/run_model_training.sh"]

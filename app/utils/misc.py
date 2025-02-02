@@ -88,7 +88,7 @@ def get_model_configs():
             
         for model in config["models"]:
             # Validate required fields exist
-            required_fields = ["timeframe", "pair", "lags", "data_type", "name"]
+            required_fields = ["name", "pair", "predict_timeframe", "input_timeframe"]
             for field in required_fields:
                 if field not in model:
                     raise ValueError(f"Invalid config.yaml: '{field}' is missing for a model")
@@ -97,13 +97,27 @@ def get_model_configs():
             if not model["name"]:
                 raise ValueError("Invalid config.yaml: 'name' cannot be empty")
             
-            # Validate lags is integer
-            if not is_valid_number(model['lags']):
-                raise ValueError(f"Invalid config.yaml: 'lags' must be an integer, got {type(model["lags"])}")
-                
-            # Validate data_type is valid
-            if model["data_type"] not in ["daily", "hourly"]:
-                raise ValueError(f"Invalid config.yaml: 'data_type' must be 'daily' or 'hourly', got {model["data_type"]}")
+            # Validate input_timeframe format
+            input_tf = model["input_timeframe"]
+            if not isinstance(input_tf, str) or len(input_tf) < 2:
+                raise ValueError(f"Invalid input_timeframe format: '{input_tf}'. Must be in format like '8h' or '7d'")
+            
+            value, unit = input_tf[:-1], input_tf[-1]
+            if not value.isdigit():
+                raise ValueError(f"Invalid input_timeframe value: '{value}'. Must be a number")
+            if unit not in ['h', 'd']:
+                raise ValueError(f"Invalid input_timeframe unit: '{unit}'. Must be 'h' (hour) or 'd' (day)")
+            
+            # Validate predict_timeframe format
+            predict_tf = model["predict_timeframe"]
+            if not isinstance(predict_tf, str) or len(predict_tf) < 2:
+                raise ValueError(f"Invalid predict_timeframe format: '{predict_tf}'. Must be in format like '1h', '1d', '1w', or '1m'")
+            
+            value, unit = predict_tf[:-1], predict_tf[-1]
+            if not value.isdigit():
+                raise ValueError(f"Invalid predict_timeframe value: '{value}'. Must be a number")
+            if unit not in ['h', 'd', 'w', 'm']:
+                raise ValueError(f"Invalid predict_timeframe unit: '{unit}'. Must be 'h' (hour), 'd' (day), 'w' (week), or 'm' (month)")
                 
         return config["models"]
         
@@ -113,3 +127,9 @@ def get_model_configs():
         raise ValueError(f"Invalid YAML in config.yaml: {str(e)}")
     except Exception as e:
         raise Exception(f"Error loading config.yaml: {str(e)}")
+
+# Extract lags and data_type from input_timeframe (e.g. "8h" -> 8 lags, "hourly" data_type)
+def parse_timeframe(input_timeframe):
+    lags = int(input_timeframe[:-1])  # Get all characters except last one and convert to int
+    data_type = "hourly" if input_timeframe[-1] == "h" else "daily"  # "h" -> hourly, "d" -> daily
+    return lags, data_type

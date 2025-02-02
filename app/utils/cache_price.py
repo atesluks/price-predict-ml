@@ -126,8 +126,8 @@ def predict_price(session, pair, model_name, lags, data_type="hourly"):
         print_log(EMITTER, f"Failed predicting price {model_name}: {e}", LogType.ERROR)
         return None
     
-def get_price_for_api(db, model_name, pair, lags):
-    price = get_price(db, model_name, pair, lags)
+def get_price_for_api(db, model_name, pair, lags, data_type):
+    price = get_price(db, model_name, pair, lags, data_type)
     if is_valid_number(price):
         return {"price": price}
     else:

@@ -39,17 +39,10 @@ services:
     depends_on:
       - mlflow
     
-  models-btc:
+  model_training:
     build:
       context: ..
-      dockerfile: docker/Dockerfile.models.btc
-    depends_on:
-      - mlflow
-  
-  models-eth:
-    build:
-      context: ..
-      dockerfile: docker/Dockerfile.models.eth
+      dockerfile: docker/Dockerfile.model_training
     depends_on:
       - mlflow
 

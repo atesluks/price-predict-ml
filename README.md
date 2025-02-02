@@ -63,13 +63,8 @@ docker run -d --name data-workers data-workers
 
 ### Model training scripts
 ```
-docker build -t models-btc -f docker/Dockerfile.models.btc .
-docker run -d --name models-btc --link mlflow models-btc
-```
-
-```
-docker build -t models-eth -f docker/Dockerfile.models.eth .
-docker run -d --name models-eth --link mlflow models-eth
+docker build -t model_training -f docker/Dockerfile.model_training .
+docker run -d --name model_training --link mlflow model_training
 ```
 
 ### Cache worker

@@ -9,7 +9,7 @@ sys.path.append(os.path.abspath(os.path.join('..', '..', '..')))
 from app.database import SessionLocal
 from app.utils.cache_price import get_all_cached_price_records
 from app.utils.data import get_latest_hourly_records_for_pairs, get_latest_daily_records_for_pairs
-from app.utils.misc import is_valid_number, alert_slack, log, log_error, print_log
+from app.utils.misc import is_valid_number, alert_slack, log, log_error, print_log, get_model_configs
 from app.utils.load_file import get_latest_run_from_mlflow
 
 # Constants
@@ -24,17 +24,6 @@ CACHE_PRICE_ALERT_THRESHOLD_MINUTES = 10 # If the cache price has not been updat
 HOURLY_DATA_ALERT_THRESHOLD_HOURS = 2  # Maximum allowed age (in hours) for hourly market data before triggering a Slack alert
 DAILY_DATA_ALERT_THRESHOLD_HOURS = 26  # Maximum allowed age (in hours) for daily market data before triggering a Slack alert
 
-MODELS = [
-    {"model": "06_btc_1m_from_btc_8h_multi", "experiment": "1 month BTC prediction", "data_type": "hourly"},
-    {"model": "07_btc_2m_from_btc_8h_multi", "experiment": "2 months BTC prediction", "data_type": "hourly"},
-    {"model": "08_btc_3m_from_btc_7d_multi", "experiment": "3 months BTC prediction", "data_type": "daily"},
-    {"model": "09_btc_6m_from_btc_7d_multi", "experiment": "6 months BTC prediction", "data_type": "daily"},
-    {"model": "10_eth_1m_from_eth_8h_multi", "experiment": "1 month ETH prediction", "data_type": "hourly"},
-    {"model": "11_eth_2m_from_eth_8h_multi", "experiment": "2 months ETH prediction", "data_type": "hourly"},
-    {"model": "12_eth_3m_from_eth_7d_multi", "experiment": "3 months ETH prediction", "data_type": "daily"},
-    {"model": "13_eth_6m_from_eth_7d_multi", "experiment": "6 months ETH prediction", "data_type": "daily"},
-]
-
 DATA_ASSET_PAIRS = [
     "BTC-USD",
     "ETH-USD",
@@ -42,6 +31,17 @@ DATA_ASSET_PAIRS = [
 ]
 
 WORKER_NAME = "monitoring"
+
+# Load models configuration once at module level
+MODELS_CONFIG = get_model_configs()
+MODELS = [
+    {
+        "model": model["name"],
+        "experiment": model["name"].replace("_", " ").title(),
+        "data_type": "hourly" if model["input_timeframe"][-1] == "h" else "daily"
+    }
+    for model in MODELS_CONFIG
+]
 
 # Checking if the chache worker works well (if all the prices are cached on time)
 def check_cache():

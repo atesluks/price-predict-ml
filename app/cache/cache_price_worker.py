@@ -8,7 +8,7 @@ from apscheduler.schedulers.blocking import BlockingScheduler
 sys.path.append(os.path.abspath(os.path.join("..", "..", "..")))
 from app.database import SessionLocal
 from app.utils.cache_price import get_price
-from app.utils.misc import log, log_error, print_log, get_model_configs
+from app.utils.misc import log, log_error, print_log, get_model_configs, parse_timeframe
 
 # How often the cache scheduler runs (in minutes). The scheduler will run ML models for price prediction and save in cache DB table.
 CACHE_SCHEDULER_INTERVAL_MINUTES = 1 
@@ -25,8 +25,7 @@ def scheduled_task():
         for model in MODELS:
             model_name = model["name"]
             pair = model["pair"]
-            lags = model["lags"]
-            data_type = model["data_type"]
+            lags, data_type = parse_timeframe(model["input_timeframe"])
 
             get_price(session, model_name, pair, lags, data_type)
         

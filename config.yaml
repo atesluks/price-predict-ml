@@ -1,41 +1,40 @@
 models:
-  - timeframe: "1m"
+  - name: "btc_1d_from_8h"
     pair: "BTC-USD"
-    lags: 8
-    data_type: "hourly"
-    name: "06_btc_1m_from_btc_8h_multi"
-  - timeframe: "2m"
-    pair: "BTC-USD" 
-    lags: 8
-    data_type: "hourly"
-    name: "07_btc_2m_from_btc_8h_multi"
-  - timeframe: "3m"
+    predict_timeframe: "1d"  # predict 1 day
+    input_timeframe: "8h"    # using last 8 hours of data
+
+  - name: "btc_1w_from_8h"
     pair: "BTC-USD"
-    lags: 7
-    data_type: "daily"
-    name: "08_btc_3m_from_btc_7d_multi"
-  - timeframe: "6m"
+    predict_timeframe: "1w"  # predict 1 week ahead
+    input_timeframe: "8h"    # using last 8 hours of data
+
+  - name: "btc_1m_from_7d"
     pair: "BTC-USD"
-    lags: 7
-    data_type: "daily"
-    name: "09_btc_6m_from_btc_7d_multi"
-  - timeframe: "1m"
+    predict_timeframe: "1m"  # predict 1 month ahead
+    input_timeframe: "7d"    # using last 7 days of data
+
+  - name: "btc_3m_from_7d"
+    pair: "BTC-USD"
+    predict_timeframe: "3m"  # predict 3 months ahead
+    input_timeframe: "7d"    # using last 7 days of data
+
+  - name: "eth_1d_from_8h"
     pair: "ETH-USD"
-    lags: 8
-    data_type: "hourly"
-    name: "10_eth_1m_from_eth_8h_multi"
-  - timeframe: "2m"
+    predict_timeframe: "1d"  # predict 1 day
+    input_timeframe: "8h"    # using last 8 hours of data
+
+  - name: "eth_1w_from_8h"
     pair: "ETH-USD"
-    lags: 8
-    data_type: "hourly"
-    name: "11_eth_2m_from_eth_8h_multi"
-  - timeframe: "3m"
+    predict_timeframe: "1w"  # predict 1 week ahead
+    input_timeframe: "8h"    # using last 8 hours of data
+
+  - name: "eth_1m_from_7d"
     pair: "ETH-USD"
-    lags: 7
-    data_type: "daily"
-    name: "12_eth_3m_from_eth_7d_multi"
-  - timeframe: "6m"
+    predict_timeframe: "1m"  # predict 1 month ahead
+    input_timeframe: "7d"    # using last 7 days of data
+
+  - name: "eth_3m_from_7d"
     pair: "ETH-USD"
-    lags: 7
-    data_type: "daily"
-    name: "13_eth_6m_from_eth_7d_multi"
+    predict_timeframe: "3m"  # predict 3 months ahead
+    input_timeframe: "7d"    # using last 7 days of data

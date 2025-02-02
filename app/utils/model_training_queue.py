@@ -7,32 +7,20 @@ import os
 
 PATIENCE_INTERVAL_MINUTES = int(os.getenv('PATIENCE_INTERVAL_MINUTES', 10))
 
+from app.utils.misc import get_model_configs
+
+# Get all models from config.yaml
+model_configs = get_model_configs()
+
+# Filter models based on input_timeframe
 HOURLY_DATA_DEPENDENT_MODELS = [
-    "06_btc_1m_from_btc_8h_multi",
-    "07_btc_2m_from_btc_8h_multi",
-    "10_eth_1m_from_eth_8h_multi",
-    "11_eth_2m_from_eth_8h_multi",
+    model["name"] for model in model_configs 
+    if model["input_timeframe"].endswith("h")
 ]
 
 DAILY_DATA_DEPENDENT_MODELS = [
-    "08_btc_3m_from_btc_7d_multi",
-    "09_btc_6m_from_btc_7d_multi",
-    "12_eth_3m_from_eth_7d_multi",
-    "13_eth_6m_from_eth_7d_multi",
-]
-
-BTC_DEPENDENT_MODELS = [
-    "06_btc_1m_from_btc_8h_multi",
-    "07_btc_2m_from_btc_8h_multi",
-    "08_btc_3m_from_btc_7d_multi",
-    "09_btc_6m_from_btc_7d_multi",
-]
-
-ETH_DEPENDENT_MODELS = [
-    "10_eth_1m_from_eth_8h_multi",
-    "11_eth_2m_from_eth_8h_multi",
-    "12_eth_3m_from_eth_7d_multi",
-    "13_eth_6m_from_eth_7d_multi",
+    model["name"] for model in model_configs
+    if model["input_timeframe"].endswith("d") 
 ]
 
 def add_hourly_data_dependent_models(data_worker):
@@ -73,37 +61,38 @@ def add_dependent_models(data_worker, dependent_models):
     finally:
         session.close()
 
-def reset_training_status_to_pending(asset: str):
-    # Determine the dependent models based on the asset
-    dependent_models = BTC_DEPENDENT_MODELS if asset == "BTC" else ETH_DEPENDENT_MODELS
-    
+def reset_training_status_to_pending():
     session = SessionLocal()
 
     try:
-        # Iterate through dependent_models and update the status from TRAINING to PENDING if it matches
-        for model_name in dependent_models:
-            session.execute(
-                update(ModelTrainingQueue)
-                .where(ModelTrainingQueue.model_name == model_name)
-                .where(ModelTrainingQueue.status == ModelTrainingStatus.TRAINING)
-                .values(
-                    status=ModelTrainingStatus.PENDING,
-                    updated_at=datetime.now(UTC)
-                )
+        # Update all models with TRAINING status to PENDING
+        session.execute(
+            update(ModelTrainingQueue)
+            .where(ModelTrainingQueue.status == ModelTrainingStatus.TRAINING)
+            .values(
+                status=ModelTrainingStatus.PENDING,
+                updated_at=datetime.now(UTC)
             )
+        )
 
-            # Query to find all models with PENDING status for this model_name
-            pending_models = session.query(ModelTrainingQueue).filter_by(
+        # Get all model names that have PENDING status
+        pending_models = session.query(ModelTrainingQueue.model_name).filter_by(
+            status=ModelTrainingStatus.PENDING
+        ).distinct().all()
+        
+        # For each model name, keep only the earliest PENDING entry
+        for model_name, in pending_models:
+            duplicates = session.query(ModelTrainingQueue).filter_by(
                 model_name=model_name,
                 status=ModelTrainingStatus.PENDING
             ).order_by(ModelTrainingQueue.added_at).all()
 
             # If more than one PENDING model is found, delete the later ones
-            if len(pending_models) > 1:
+            if len(duplicates) > 1:
                 # Keep the first one and delete the rest
-                for model in pending_models[1:]:
+                for model in duplicates[1:]:
                     session.delete(model)
-        
+
         # Commit the transaction to save the changes
         session.commit()
 

@@ -29,6 +29,7 @@ from sklearn.metrics import mean_squared_error, mean_absolute_error
 from app.database import SessionLocal
 from app.models import DataCGCoinsMarketChart1h, DataCGCoinsMarketChart1d
 from sklearn.model_selection import TimeSeriesSplit
+import re
 
 # Constants
 CROSS_VAL_SPLIT = 5
@@ -37,7 +38,25 @@ RANDOM_SEARCH_N_ITER = 10
 PRUNER_PATIENCE = 5
 
 # Functions
+# Calculate DATAPOINTS_AHEAD_TO_PREDICT based on timeframe and data_type
+def calculate_datapoints_ahead(timeframe, data_type):
+    # Extract number and unit from timeframe (e.g. "6m" -> 6 and "m")
+    number, unit = int(timeframe[:-1]), timeframe[-1]
 
+    # Convert all timeframes to hours first
+    hours = {
+        'h': number,
+        'd': number * 24,
+        'w': number * 24 * 7,
+        'm': number * 24 * 30
+    }[unit]
+
+    # Convert hours to target data_type points
+    if data_type == "hourly":
+        return hours
+    else:  # daily
+        return max(1, hours // 24)  # Round up to 1 day minimum
+        
 def load_hourly_data_from_db(model_name, pair):
     return load_data_from_db(model_name, pair, DataCGCoinsMarketChart1h)
 
@@ -99,7 +118,7 @@ def parse_time(seconds):
         return f"{int(minutes)}m {seconds}s"
 
 # Pre-processing the data
-def data_pre_processing(df, model_name, lags, time_ahead_to_predict, n_test):
+def data_pre_processing(df, model_name, lags, time_ahead_to_predict, train_ratio = 0.9):
     # Checking missing values
     print(f"{model_name}: Total missing values - {df.isna().sum().sum()}")
 
@@ -130,8 +149,8 @@ def data_pre_processing(df, model_name, lags, time_ahead_to_predict, n_test):
     X = df_lagged.drop(columns=f'Price_in_{time_ahead_to_predict}')
     y = df_lagged[f'Price_in_{time_ahead_to_predict}']
 
-    # Split the data into training and testing datasets
-    n_train = len(df_lagged) - n_test
+    # Split the data into training and testing datasets based on train_ratio
+    n_train = int(len(df_lagged) * train_ratio)
 
     X_train = X[:n_train]
     y_train = y[:n_train]
@@ -200,17 +219,15 @@ def logging_results(
 
     # Set tags
     mlflow.set_tag("Model name", model_name)
-    mlflow.set_tag("mlflow.note.content", params["model_description"])
     mlflow.set_tag("Model type", best_model_name)
     mlflow.set_tag("Lags", params["lags"])
-    mlflow.set_tag("Input description", params["input_description"])
-    mlflow.set_tag("Output description", params["output_description"])
     mlflow.set_tag("Train data points", params["n_train"])
     mlflow.set_tag("Test data points", params["n_test"])
-    mlflow.set_tag("Source data name", params["source_name"])
-    mlflow.set_tag("Source data columns", params["source_columns"])
     mlflow.set_tag("Source data time form", params["data_from"])
     mlflow.set_tag("Source data time to", params["data_to"])
+    mlflow.set_tag("Predict timeframe", params["predict_timeframe"])
+    mlflow.set_tag("Input timeframe", params["input_timeframe"])
+    mlflow.set_tag("Train ratio", params["train_ratio"])
 
     # Logging time
     mlflow.set_tag("Random Search total time", params["random_search_total_time"])
