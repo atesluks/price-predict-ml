@@ -1,26 +1,17 @@
-Project for asset product price predictions using different ML models
+# Project Description
+This repository provides an AI/ML-based price prediction system for various DeFi use cases (e.g., stablecoins, lending-borrowing, vaults, DEX). It features:
+- Automated Data Pipelines – Collect, process, and store large volumes of asset data.
+- Advanced Model Training – Leverages multiple models with random search and Bayesian optimization to systematically find and train top performers.
+- Intelligent Caching – Minimizes unnecessary computations by caching and updating predictions only when needed.
+- Comprehensive Monitoring – Ensures every pipeline and service is continuously tracked and maintained.
+- MLflow Integration – Tracks experiments, enabling seamless retraining on fresh data and swift deployment of best-performing models.
+- Containerized Infrastructure – Uses Docker to streamline development, deployment, and scalability while reducing bottlenecks and maximizing resource efficiency.
+
+Use the instructions below to get started, manage infrastructure, and run individual services in Docker.
 
 ### Get started
 1. Install Docker
-2. Clone the project
-3. Create `.env` file from `.env.example` and fill required values.
-4. If there are currently running containers from docker compose, stop them with the following command:
-```
-docker compose -f docker/docker-compose.yml down
-```
-5. Build and run : 
-```
-docker compose -f docker/docker-compose.yml up -d --build
-```
-
-
-# Development
-
-### Adding dependencies
-When adding dependencies, don't forget to add them in `dependencies.txt` file.
-
-## Database
-Run the following command to create a Postgres database locally with Docker:
+2. Run the following command to create a Postgres database locally with Docker:
 ```
 docker run -d \
   --name price-predict-postgres \
@@ -30,17 +21,26 @@ docker run -d \
   -p 5430:5432 \
 postgres:16.2
 ```
+Alternatively, you can use hosted database.
 
-When you just created a database, run database migration to create needed tables 
+3. Run database migration to create needed tables:
 ```
 docker build -t migration -f docker/Dockerfile.migration .
 docker run --rm -e GENERATE_SCRIPTS=false migration
 ```
 See [Migration Guide](./alembic/README) for more.
 
-## Running all
-To run all services, you can use the same docker compose command as when running on production.
+4. Create `.env` file from `.env.example` and fill required fields.
+5. Build and run everything: 
+```
+docker compose -f docker/docker-compose.yml up -d --build
+```
+6. To stop everything:
+```
+docker compose -f docker/docker-compose.yml down
+```
 
+# Development
 ## Run individual services
 
 ### MLFlow server
@@ -61,7 +61,7 @@ docker build -t data-workers -f docker/Dockerfile.data .
 docker run -d --name data-workers data-workers
 ```
 
-### Model training scripts
+### Model training
 ```
 docker build -t model_training -f docker/Dockerfile.model_training .
 docker run -d --name model_training --link mlflow model_training
@@ -85,15 +85,21 @@ docker volume create portainer_data
 docker run -d -p 8000:8000 -p 9443:9443 --name portainer --restart=always -v /var/run/docker.sock:/var/run/docker.sock -v portainer_data:/data portainer/portainer-ce:2.20.3
 ```
 
-### Jupyter Notebook (for development) (need to run mlflow separately)
+### Jupyter Notebook (need to run mlflow separately)
 ```
 docker build -t jupyter -f docker/Dockerfile.jupyter .
 docker run -d -p 8888:8888 -v ./:/app --name jupyter --link mlflow jupyter
 ```
 
 # Other
+### Configuring models
+You can control which models are trained by editing the `models` section in `config.yaml`. Each entry defines a model name, the asset pair, and the timeframes for input data and prediction targets. When the system starts, it automatically generates corresponding API endpoints for each defined model and structures the entire training pipeline around these configurations. This way, you can easily add or remove models, as well as adjust timeframes, without needing to modify the core application code.
+
+### Adding dependencies
+When adding dependencies, don't forget to add them in `dependencies.txt` file.
+
 ### DB Migrations
-Check `alembic/README.md` for database migration instructions.
+Check [Migration Guide](./alembic/README) for database migration instructions.
 
 ### Coingecko API
 To check the usage for Coingecko API:

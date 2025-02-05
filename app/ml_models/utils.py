@@ -37,7 +37,6 @@ OPTUNA_TRIALS = 30
 RANDOM_SEARCH_N_ITER = 10
 PRUNER_PATIENCE = 5
 
-# Functions
 # Calculate DATAPOINTS_AHEAD_TO_PREDICT based on timeframe and data_type
 def calculate_datapoints_ahead(timeframe, data_type):
     # Extract number and unit from timeframe (e.g. "6m" -> 6 and "m")
@@ -223,7 +222,7 @@ def logging_results(
     mlflow.set_tag("Lags", params["lags"])
     mlflow.set_tag("Train data points", params["n_train"])
     mlflow.set_tag("Test data points", params["n_test"])
-    mlflow.set_tag("Source data time form", params["data_from"])
+    mlflow.set_tag("Source data time from", params["data_from"])
     mlflow.set_tag("Source data time to", params["data_to"])
     mlflow.set_tag("Predict timeframe", params["predict_timeframe"])
     mlflow.set_tag("Input timeframe", params["input_timeframe"])
